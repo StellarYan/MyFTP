@@ -3,12 +3,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Collections.Generic;
+using System.IO;
 
 public static class MyFTPHelper
 {
     public const int ftpControlPort = 20;
     const int commandBufferSize = 1024;
     public static string FTPNewLine = Environment.NewLine;
+    public static string FileListNewLine = "\n";
     public static void WriteToNetStream(string s,NetworkStream stream)
     {
         try
@@ -34,6 +36,22 @@ public static class MyFTPHelper
         {
             throw exc;
         }
+    }
+
+
+    public static string EncodeFileList(List<string> files)
+    {
+        string res = "";
+        files.ForEach((s) => res += FileListNewLine + s);
+        return res;
+    }
+    public static List<string> DecodeFileList(string s)
+    {
+        if (s == null) return new List<string>();
+        var ss= s.Split(new string[] { FileListNewLine },StringSplitOptions.RemoveEmptyEntries);
+        List<string> fileList = new List<string>();
+        Array.ForEach(ss, (file) => fileList.Add(file));
+        return fileList;
     }
 
 
@@ -68,16 +86,17 @@ public struct User
 {
     public string username;
     public string password;
-
 }
+
+
+
 
 
 public struct FTPReply
 {
-    public static FTPReply CommandOkay = new FTPReply()
-    {
-        replyCode="200"
-    };
+    public const string Code_UserLoggedIn = "230";
+    public const string Code_UserNotLogIn = "530";
+    public const string Code_FileList = "212";
 
 
 
@@ -156,13 +175,30 @@ public struct FTPCommand
     public static string Command2String(FTPCommand command)
     {
         String s = command.controlCommand;
-        Array.ForEach(command.parameters, (p) => s += " " + p);
+        if(command.parameters!=null)
+        {
+            Array.ForEach(command.parameters, (p) => s += " " + p);
+        }
         return s;
     }
 
     public override string ToString()
     {
-        return FTPCommand.Command2String(this);
+        return Command2String(this);
     }
+
+}
+
+public enum TransferState
+{
+    Ready,Running,Finished,Error
+}
+
+public struct Download
+{
+    public TransferState State { get; private set; }
+    public NetworkStream networkStream;
+    public FileStream filestream;
+    
 
 }

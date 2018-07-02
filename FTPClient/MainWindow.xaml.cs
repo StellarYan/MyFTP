@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Net;
 using System.Diagnostics;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System.IO;
 
 namespace FTPClient
 {
@@ -37,15 +39,60 @@ namespace FTPClient
                 {
                     this.Dispatcher.Invoke(() =>
                     {
-                        ClientConsole.Content += s;
+                        ClientConsole.Text += s;
                     }
                     );
                 });
+                client.downloadDirectory = new DirectoryInfo(downloadDirectoryLabel.Content.ToString());
+
             }
             catch (Exception exc)
             {
-                ClientConsole.Content += "连接失败";
+                ClientConsole.Text += "连接失败";
             }
+        }
+
+        private void UpdateView()
+        {
+            if(client!=null)
+            {
+                if (client.fileList != null)
+                {
+                    ServerFileList.Items.Clear();
+                    client.fileList.ForEach((f) => ServerFileList.Items.Add(f));
+                }
+                if (client.downloadDirectory != null)
+                {
+                    downloadDirectoryLabel.Content = client.downloadDirectory.ToString();
+                }
+            }
+        }
+
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateView();
+        }
+
+        private void SelectDownloadPath_Click(object sender, RoutedEventArgs e)
+        {
+            CommonOpenFileDialog FilePathDialog = new CommonOpenFileDialog();
+            FilePathDialog.InitialDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            FilePathDialog.IsFolderPicker = true;
+            FilePathDialog.Title = "选择下载目录";
+            if (FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                downloadDirectoryLabel.Content = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
+            }
+            if(client!=null)
+            {
+                client.downloadDirectory = new DirectoryInfo(downloadDirectoryLabel.Content.ToString());
+            }
+            UpdateView();
+        }
+
+        private void ClientConsole_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ClientConsole.ScrollToEnd();
         }
     }
 }

@@ -32,7 +32,6 @@ namespace FTPServer
         {
             InitializeComponent();
             this.Closed += (object sender, EventArgs e) => { Process.GetCurrentProcess().Kill(); };
-
             registeredUsers = new List<User>();
             registeredUsers.Add(new User() { username = "TextBox", password = "TextBox" });
         }
@@ -40,7 +39,7 @@ namespace FTPServer
 
         private void InitServer_Click(object sender, RoutedEventArgs e)
         {
-            Server = new FTPServer(".",(s)=>this.Dispatcher.Invoke(() => ServerConsole.Content += (s + Environment.NewLine)));
+            Server = new FTPServer(".",(s)=>this.Dispatcher.Invoke(() => ServerConsole.Text += (s + Environment.NewLine)));
             InitServer.IsEnabled = false;
             UpdateServer();
         }
@@ -65,10 +64,10 @@ namespace FTPServer
             if(downloadDirectory!=null)
             {
                 FileListBox.Items.Clear();
-                foreach (var f in downloadDirectory.GetFiles())
-                {
-                    FileListBox.Items.Add(f.Name + " " + f.Length + "byte");
-                }
+                Array.ForEach(downloadDirectory.GetFiles(), (f) =>
+                 {
+                     FileListBox.Items.Add(f.Name + " " + f.Length + "byte");
+                 });
             }
         }
 
@@ -97,6 +96,11 @@ namespace FTPServer
             Password.Text = string.Empty;
             UpdateView();
             UpdateServer();
+        }
+
+        private void ServerConsole_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ServerConsole.ScrollToEnd();
         }
     }
 }

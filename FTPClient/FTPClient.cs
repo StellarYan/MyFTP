@@ -7,13 +7,16 @@ using System.Windows.Threading;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
-
+using System.IO;
 namespace FTPClient
 {
     class FTPClient
     {
         TcpClient client;
         NetworkStream stream;
+
+        public List<string> fileList;
+        public DirectoryInfo downloadDirectory;
 
         static Queue<FTPReply> CachedReply = new Queue<FTPReply>();
         FTPReply? ReadNextReply()
@@ -45,7 +48,6 @@ namespace FTPClient
         }
 
 
-
         void SendMessageToServer(string msg)
         {
             try
@@ -67,10 +69,14 @@ namespace FTPClient
             {
                 client.Connect(serverIP, MyFTPHelper.ftpControlPort);
                 stream = client.GetStream();
+
                 FTPCommand userCommand = new FTPCommand("USER", new string[] { user });
                 FTPCommand passwordCommand = new FTPCommand("PASS", new string[] { password });
+                FTPCommand fileListCommand = new FTPCommand("LIST", null);
                 SendMessageToServer(userCommand.ToString() + MyFTPHelper.FTPNewLine);
                 SendMessageToServer(passwordCommand.ToString() + MyFTPHelper.FTPNewLine);
+                SendMessageToServer(fileListCommand.ToString() + MyFTPHelper.FTPNewLine);
+
                 ConsoleLogEvent += ConsoleLogDelegate;
             }
             catch(Exception exc)
@@ -86,13 +92,29 @@ namespace FTPClient
             PostMessageToConsoleWithLock("开始监听");
             while(true)
             {
-                FTPReply? nreply = ReadNextReply();
-                if (nreply == null) continue;
-                else
+                try
                 {
-                    FTPReply reply = nreply.Value;
-                    PostMessageToConsoleWithLock("f服务器返回值:"+reply.replyCode);
+                    FTPReply? nreply = ReadNextReply();
+                    if (nreply == null) continue;
+                    else
+                    {
+                        FTPReply reply = nreply.Value;
+                        PostMessageToConsoleWithLock("服务器返回值:" + reply.replyCode);
+                        switch (reply.replyCode)
+                        {
+                            case FTPReply.Code_FileList:
+                                List<string> fileList = MyFTPHelper.DecodeFileList(reply.post);
+                                this.fileList = fileList;
+                                break;
+                        }
+                    }
                 }
+                catch(Exception exc)
+                {
+                    PostMessageToConsoleWithLock(exc.Message);
+                    return;
+                }
+                
             }
         }
 

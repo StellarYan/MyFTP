@@ -24,18 +24,18 @@ using System.Windows.Threading;
  * MODE不实现，默认为Stream模式
  * TYPE不实现，默认为ASCII Non-print
  * 
+ * PASV 让服务器监听指定端口
+ * PORT 让服务器连接客户端的指定端口
+ * //暂时只实现DATA PORT传输
  * 
  * 实现的命令
  * USER 指定账号
  * PASS 指定密码
- * SIZE 从服务器上返回指定文件的大小
- * PASV 让服务器监听指定端口
- * PORT 让服务器连接客户端的指定端口
+ * LIST 回传当前文件目录
  * RETR 下载文件
  * STOR 上传文件
  * QUIT 关闭与服务器的连接
  * ABOR 放弃之前的文件传输
- * LIST 回传当前文件目录
  * STAT 回传当前FTP状态
  * NOOP 服务器返回OK
  * 
@@ -44,7 +44,7 @@ using System.Windows.Threading;
 
 namespace FTPServer
 {
-
+    
     class FTPConnect
     {
         public ServerConnectionDispatcher serverDispatcher;
@@ -87,7 +87,6 @@ namespace FTPServer
             {
                 try
                 {
-                    
                     FTPCommand? ncommand = ReadNextCommand();
                     if (ncommand == null) continue;
                     else
@@ -113,21 +112,34 @@ namespace FTPServer
                                 {
                                     Logined = true;
                                     serverDispatcher.PostMessageFromClient("已成功登录",this);
-                                    MyFTPHelper.WriteToNetStream(FTPReply.CommandOkay.ToString(),stream);
+                                    MyFTPHelper.WriteToNetStream(new FTPReply()
+                                    {
+                                        replyCode = FTPReply.Code_UserLoggedIn,
+                                        post = "login success"
+                                    }.ToString(), stream);
                                 }
                                 else
                                 {
                                     serverDispatcher.PostMessageFromClient("密码或用户名有误",this);
-                                    MyFTPHelper.WriteToNetStream(FTPReply.CommandOkay.ToString(), stream);
+                                    MyFTPHelper.WriteToNetStream(new FTPReply()
+                                    {
+                                        replyCode = FTPReply.Code_UserNotLogIn,
+                                        post = "login fail"
+                                    }.ToString(), stream);
                                 }
-                                
                                 break;
-                            case "SIZE": //SIZE 从服务器上返回指定文件的大小
-                                
+                            case "LIST": //LIST 返回服务器的文件目录（标准中不指定返回格式，格式为我们自定义）
+                                MyFTPHelper.WriteToNetStream(
+                                    new FTPReply()
+                                    {
+                                        replyCode = FTPReply.Code_FileList,
+                                        post = serverDispatcher.GetEncodedFileList()
+                                    }.ToString(),stream);
                                 break;
-                            case "PASV": //PASV 让服务器监听特定端口
+                            case "PASV": //PASV 数据线程让服务器监听特定端口
+
                                 break;
-                            case "PORT": //PORT 让服务器连接客户端的指定端口
+                            case "PORT": //PORT 数据线程让服务器连接客户端的指定端口
                                 break;
                             case "RETR": //RETR 下载文件
                                 break;
@@ -145,6 +157,8 @@ namespace FTPServer
                 catch(System.IO.IOException exc)
                 {
                     serverDispatcher.PostMessageFromClient(exc.Message, this);
+                    client.Close();
+                    stream.Close();
                     return;
                 }
                 
@@ -170,6 +184,17 @@ namespace FTPServer
             }
         }
 
+        public string GetEncodedFileList()
+        {
+            if (server.currentDirectory == null) return null;
+            List<string> FileList = new List<string>();
+            Array.ForEach(server.currentDirectory.GetFiles(), (f) =>
+            {
+                FileList.Add(f.Name + " " + f.Length + "byte");
+            });
+            return MyFTPHelper.EncodeFileList(FileList);
+        }
+
         public void PostMessageFromClient(string msg, FTPConnect connect)
         {
             IPAddress ip = ((IPEndPoint)connect.client.Client.RemoteEndPoint).Address;
@@ -177,11 +202,7 @@ namespace FTPServer
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() +" "+ connect.user.username+"   " + msg);
             else
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() + "   " + msg);
-            
         }
-
-
-
     }
 
 

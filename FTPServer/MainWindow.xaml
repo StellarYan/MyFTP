@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FTPServer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="440.15" Width="800">
     <Grid>
         <Grid HorizontalAlignment="Left" Height="181" Margin="10,10,0,0" VerticalAlignment="Top" Width="362">
             <Label x:Name="SelectFilePathLabel" Content="服务器文件目录：" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="334" Margin="0,49,0,0"/>
@@ -14,7 +14,6 @@
             <Button x:Name="InitServer" Content="创建服务器" HorizontalAlignment="Left" Height="26" Margin="0,181,-411,-26" VerticalAlignment="Top" Width="773" Click="InitServer_Click"/>
             <Label HorizontalAlignment="Left" Height="25" Margin="362,0,-56,0" VerticalAlignment="Top" Width="56" Content="用户名"/>
         </Grid>
-        <Label x:Name="ServerConsole" Content="Label" HorizontalAlignment="Left" Height="193" Margin="10,216,0,0" VerticalAlignment="Top" Width="772" Background="Black" Foreground="White"/>
         <Grid HorizontalAlignment="Left" Height="181" Margin="372,10,0,0" VerticalAlignment="Top" Width="410">
             <Label Content="密码" HorizontalAlignment="Left" Height="25" Margin="163,0,0,0" VerticalAlignment="Top" Width="46"/>
             <TextBox x:Name="Username" TextWrapping="Wrap" Text="TextBox" Margin="59,0,247,156"/>
@@ -23,5 +22,6 @@
             <CheckBox x:Name="LoginBeforeFTP" Content="下载是否要求提前登录" HorizontalAlignment="Left" Height="25" Margin="10,30,0,0" VerticalAlignment="Top" Width="153"/>
         </Grid>
         <Button x:Name="CreateUser" Content="创建用户" HorizontalAlignment="Left" Height="29" Margin="698,10,0,0" VerticalAlignment="Top" Width="84" Click="CreateUser_Click"/>
+        <TextBox x:Name="ServerConsole" HorizontalAlignment="Left" Height="192" Margin="0,217,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="792" Background="Black" Foreground="White" IsReadOnly="True" TextChanged="ServerConsole_TextChanged"/>
     </Grid>
 </Window>
