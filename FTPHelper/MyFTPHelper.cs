@@ -92,7 +92,7 @@ public struct FTPReply
         Connections=2,
         AuthenticationAndAccounting=3,
         Unspecified=4,
-        File system=5
+        FileSystem=5
     }
 }
 
