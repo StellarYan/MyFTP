@@ -4,10 +4,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 public static class MyFTPHelper
 {
-    public const int ftpControlPort = 20;
+    public const int ftpControlPort = 21;
+    public const int ftpDataPort = 20;
     const int commandBufferSize = 1024;
     public static string FTPNewLine = Environment.NewLine;
     public static string FileListNewLine = "\n";
@@ -15,7 +17,7 @@ public static class MyFTPHelper
     {
         try
         {
-            byte[] buffer = Encoding.ASCII.GetBytes(s);
+            byte[] buffer = Encoding.Unicode.GetBytes(s);
             stream.Write(buffer, 0, buffer.Length);
         }
         catch(Exception exc)
@@ -29,8 +31,9 @@ public static class MyFTPHelper
         try
         {
             byte[] commandBuffer = new byte[commandBufferSize];
+            
             int bytesCount = stream.Read(commandBuffer, 0, commandBufferSize);
-            return Encoding.ASCII.GetString(commandBuffer, 0, bytesCount);
+            return Encoding.Unicode.GetString(commandBuffer, 0, bytesCount);
         }
         catch(Exception exc)
         {
@@ -94,9 +97,17 @@ public struct User
 
 public struct FTPReply
 {
+    public const string Code_CommandNotImplemented = "502";
     public const string Code_UserLoggedIn = "230";
     public const string Code_UserNotLogIn = "530";
     public const string Code_FileList = "212";
+    public const string Code_SyntaxErrorPara = "501";
+    public const string Code_CommandOkay = "200 ";
+    public const string Code_SyntaxError = "500";
+    public const string Code_CantOopenDataConnection = "425";
+    public const string Code_DataConnectionOpen = "225";
+    public const string Code_ConnectionClosed = "426";
+    public const string Code_TransferStarting = "125";
 
 
 
@@ -194,11 +205,55 @@ public enum TransferState
     Ready,Running,Finished,Error
 }
 
-public struct Download
+public class FileTransfer
 {
     public TransferState State { get; private set; }
     public NetworkStream networkStream;
     public FileStream filestream;
+    public int fileByteCount;
+    public Thread thread;
+
+    public void Download()
+    {
+        
+        State = TransferState.Ready;
+        Byte[] buffer = new byte[fileByteCount];
+        State = TransferState.Running;
+        int res= networkStream.Read(buffer, 0, fileByteCount);
+        if(res== fileByteCount)
+        {
+            filestream.Write(buffer, 0, fileByteCount);
+            State = TransferState.Finished;
+        }
+        else
+        {
+            State = TransferState.Error;
+        }
+        filestream.Close();
+        return;
+
+
+    }
+
+    public void Upload()
+    {
+        State = TransferState.Ready;
+        Byte[] buffer = new byte[fileByteCount];
+        State = TransferState.Running;
+        int res = filestream.Read(buffer, 0, fileByteCount);
+        if (res == fileByteCount)
+        {
+            networkStream.Write(buffer, 0, fileByteCount);
+            State = TransferState.Finished;
+        }
+        else
+        {
+            State = TransferState.Error;
+        }
+        filestream.Close();
+        return;
+
+    }
     
 
 }

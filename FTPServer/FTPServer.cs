@@ -48,8 +48,11 @@ namespace FTPServer
     class FTPConnect
     {
         public ServerConnectionDispatcher serverDispatcher;
-        public TcpClient client;
-        NetworkStream stream;
+        public TcpClient controlClient;
+        NetworkStream controlStream;
+        TcpClient dataClient;
+        NetworkStream dataStream;
+        FileTransfer currentTransfer;
         static Queue<FTPCommand> CachedCommands = new Queue<FTPCommand>();
         public User user = new User();
         public bool Logined=false;
@@ -61,7 +64,7 @@ namespace FTPServer
             string streamstring = null;
             try
             {
-                streamstring = MyFTPHelper.ReadFromNetStream(stream);
+                streamstring = MyFTPHelper.ReadFromNetStream(controlStream);
             }
             catch (Exception exc)
             {
@@ -75,8 +78,8 @@ namespace FTPServer
 
         public FTPConnect(TcpClient t, ServerConnectionDispatcher serverDispatcher)
         {
-            this.client = t;
-            stream = t.GetStream();
+            this.controlClient = t;
+            controlStream = t.GetStream();
             Thread thread = new Thread(this.Start);
             thread.Start();
             this.serverDispatcher = serverDispatcher;
@@ -93,72 +96,124 @@ namespace FTPServer
                     {
                         FTPCommand command = ncommand.Value;
                         serverDispatcher.PostMessageFromClient(command.controlCommand + "  " + string.Join(" ", command.parameters), this);
+                        FTPReply reply = new FTPReply() { replyCode=FTPReply.Code_SyntaxError };
                         switch (command.controlCommand)
                         {
                             case "USER": //USER 指定账号
-                                if(command.parameters.Length!=1)
+                                if (command.parameters.Length != 1)
                                 {
-                                    throw new Exception("用户名命令格式错误");
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara, };
+                                    break;
                                 }
                                 user.username = command.parameters[0];
                                 break;
                             case "PASS": //PASS 指定密码
                                 if (command.parameters.Length != 1)
                                 {
-                                    throw new Exception("密码命令格式错误");
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara, };
+                                    break;
                                 }
                                 user.password = command.parameters[0];
-                                if(serverDispatcher.CheckUserWithLock(user))
+                                if (serverDispatcher.CheckUserWithLock(user))
                                 {
                                     Logined = true;
-                                    serverDispatcher.PostMessageFromClient("已成功登录",this);
-                                    MyFTPHelper.WriteToNetStream(new FTPReply()
+                                    serverDispatcher.PostMessageFromClient("已成功登录", this);
+                                    reply = new FTPReply()
                                     {
                                         replyCode = FTPReply.Code_UserLoggedIn,
                                         post = "login success"
-                                    }.ToString(), stream);
+                                    };
                                 }
                                 else
                                 {
-                                    serverDispatcher.PostMessageFromClient("密码或用户名有误",this);
-                                    MyFTPHelper.WriteToNetStream(new FTPReply()
+                                    serverDispatcher.PostMessageFromClient("密码或用户名有误", this);
+                                    reply = new FTPReply()
                                     {
                                         replyCode = FTPReply.Code_UserNotLogIn,
                                         post = "login fail"
-                                    }.ToString(), stream);
+                                    };
                                 }
                                 break;
                             case "LIST": //LIST 返回服务器的文件目录（标准中不指定返回格式，格式为我们自定义）
-                                MyFTPHelper.WriteToNetStream(
-                                    new FTPReply()
-                                    {
-                                        replyCode = FTPReply.Code_FileList,
-                                        post = serverDispatcher.GetEncodedFileList()
-                                    }.ToString(),stream);
+                                reply = new FTPReply()
+                                {
+                                    replyCode = FTPReply.Code_FileList,
+                                    post = serverDispatcher.GetEncodedFileList()
+                                };
                                 break;
-                            case "PASV": //PASV 数据线程让服务器监听特定端口
+
+                            case "STOR": //STOR 客户端上传文件
 
                                 break;
-                            case "PORT": //PORT 数据线程让服务器连接客户端的指定端口
-                                break;
-                            case "RETR": //RETR 下载文件
-                                break;
-                            case "STOR": //STOR 上传文件
+                            case "RETR": //RETR 客户端下载文件
+                                if (command.parameters.Length != 1)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
+                                    break;
+                                }
+                                FileStream fs = serverDispatcher.OpenFileStreamInfileList(command.parameters[0]);
+                                if (fs == null)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_CantOopenDataConnection };
+                                    break;
+                                }
+                                if (dataClient == null)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
+                                    break;
+                                }
+                                currentTransfer = new FileTransfer()
+                                {
+                                    networkStream = dataStream,
+                                    filestream = fs,
+                                    fileByteCount = (int)fs.Length,
+                                    
+                                };
+                                currentTransfer.thread = new Thread(currentTransfer.Upload);
+                                currentTransfer.thread.Start();
+                                reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
                                 break;
                             case "ABOR": //QUIT 关闭与服务器的连接
                                 break;
                             case "QUIT": //ABOR 放弃之前的文件传输
                                 break;
+                            case "PASV": //PASV 数据线程让服务器监听特定端口\
+                                reply = new FTPReply()
+                                {
+                                    replyCode = FTPReply.Code_CommandNotImplemented,
+                                    post = null
+                                };
+                                break;
+                            case "PORT": //PORT 客户端的控制端口为N，数据端口为N+1，服务器的控制端口为21，数据端口为20
+                                int port;
+                                if (command.parameters.Length != 1 ||  !int.TryParse(command.parameters[0],out port) )
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
+                                    break;
+                                }
+                                else
+                                {
+                                    var remoteDataEnd = (IPEndPoint)controlClient.Client.RemoteEndPoint;
+                                    remoteDataEnd.Port = port+1;
+                                    dataClient = new TcpClient();
+                                    dataClient.Connect(remoteDataEnd.Address.MapToIPv4(), port + 1);
+                                    dataStream = dataClient.GetStream();
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_DataConnectionOpen };
+                                    serverDispatcher.PostMessageFromClient("建立数据连接", this);
+                                    break;
+                                }
+                                break;
                             default:
                                 break;
                         }
+                        MyFTPHelper.WriteToNetStream(reply.ToString(), controlStream);
                     }
                 }
                 catch(System.IO.IOException exc)
                 {
                     serverDispatcher.PostMessageFromClient(exc.Message, this);
-                    client.Close();
-                    stream.Close();
+                    controlClient.Close();
+                    controlStream.Close();
                     return;
                 }
                 
@@ -184,20 +239,27 @@ namespace FTPServer
             }
         }
 
+        public FileStream OpenFileStreamInfileList(string filename)
+        {
+            FileStream fs = null;
+            Array.ForEach(server.currentDirectory.GetFiles(), (f) => { if (f.Name == filename) fs = f.OpenRead(); });
+            return fs;
+        }
+
         public string GetEncodedFileList()
         {
             if (server.currentDirectory == null) return null;
             List<string> FileList = new List<string>();
             Array.ForEach(server.currentDirectory.GetFiles(), (f) =>
             {
-                FileList.Add(f.Name + " " + f.Length + "byte");
+                FileList.Add(f.Name + " " + f.Length);
             });
             return MyFTPHelper.EncodeFileList(FileList);
         }
 
         public void PostMessageFromClient(string msg, FTPConnect connect)
         {
-            IPAddress ip = ((IPEndPoint)connect.client.Client.RemoteEndPoint).Address;
+            IPAddress ip = ((IPEndPoint)connect.controlClient.Client.RemoteEndPoint).Address;
             if(connect.Logined)
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() +" "+ connect.user.username+"   " + msg);
             else

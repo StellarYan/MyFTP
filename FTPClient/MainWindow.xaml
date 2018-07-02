@@ -17,7 +17,7 @@
             <Label x:Name="downloadDirectoryLabel" Content="文件下载目录" HorizontalAlignment="Left" Height="26" Margin="150,10,0,0" VerticalAlignment="Top" Width="230"/>
             <ListBox x:Name="ServerFileList" HorizontalAlignment="Left" Height="97" Margin="10,62,0,0" VerticalAlignment="Top" Width="370"/>
             <Button x:Name="SelectDownloadPath" Content="选择下载目录" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="135" Click="SelectDownloadPath_Click"/>
-            <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="10,39,0,0" VerticalAlignment="Top" Width="355"/>
+            <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="10,39,0,0" VerticalAlignment="Top" Width="355" Click="DownloadFile_Click"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="31" Margin="10,179,0,0" VerticalAlignment="Top" Width="771">
             <Label Content="服务器IP地址" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="80"/>

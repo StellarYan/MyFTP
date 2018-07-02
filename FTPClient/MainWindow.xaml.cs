@@ -48,7 +48,7 @@ namespace FTPClient
             }
             catch (Exception exc)
             {
-                ClientConsole.Text += "连接失败";
+                ClientConsole.Text += "连接失败" + exc.Message;
             }
         }
 
@@ -93,6 +93,14 @@ namespace FTPClient
         private void ClientConsole_TextChanged(object sender, TextChangedEventArgs e)
         {
             ClientConsole.ScrollToEnd();
+        }
+
+        private void DownloadFile_Click(object sender, RoutedEventArgs e)
+        {
+            string[] ss = ServerFileList.SelectedItems[0].ToString().Split(' ');
+            string filename = ss[0];
+            string fileSize = ss[1];
+            client.DownLoadFile(filename, int.Parse(fileSize));
         }
     }
 }

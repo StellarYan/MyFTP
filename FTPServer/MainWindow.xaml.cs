@@ -26,7 +26,7 @@ namespace FTPServer
     {
         FTPServer Server;
 
-        DirectoryInfo downloadDirectory;
+        DirectoryInfo serverDirectory;
         List<User> registeredUsers;
         public MainWindow()
         {
@@ -49,7 +49,7 @@ namespace FTPServer
             if(Server!=null)
             {
                 Server.registeredUsers = registeredUsers;
-                Server.currentDirectory = downloadDirectory;
+                Server.currentDirectory = serverDirectory;
             }
         }
 
@@ -61,10 +61,10 @@ namespace FTPServer
                 UserList.Items.Clear();
                 registeredUsers.ForEach((u) => UserList.Items.Add("账号:" + u.username + " 密码:" + u.password));
             }
-            if(downloadDirectory!=null)
+            if(serverDirectory!=null)
             {
                 FileListBox.Items.Clear();
-                Array.ForEach(downloadDirectory.GetFiles(), (f) =>
+                Array.ForEach(serverDirectory.GetFiles(), (f) =>
                  {
                      FileListBox.Items.Add(f.Name + " " + f.Length + "byte");
                  });
@@ -81,7 +81,7 @@ namespace FTPServer
             {
                 SelectFilePathLabel.Content = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
             }
-            downloadDirectory = new DirectoryInfo(SelectFilePathLabel.Content.ToString());
+            serverDirectory = new DirectoryInfo(SelectFilePathLabel.Content.ToString());
             UpdateView();
             UpdateServer();
         }
