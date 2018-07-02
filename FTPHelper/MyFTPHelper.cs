@@ -71,6 +71,7 @@ public struct User
 {
     public string username;
     public string password;
+
 }
 
 
