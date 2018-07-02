@@ -57,10 +57,7 @@ static class FTPCommandProcessHelper
             throw exc;
         }
         string[] messages = streamstring.Split(new string[] { MyFTPHelper.FTPNewLine }, StringSplitOptions.RemoveEmptyEntries);
-        foreach (var message in messages)
-        {
-            CachedCommands.Enqueue(FTPCommand.String2Command(message));
-        }
+        Array.ForEach(messages, (m) => CachedCommands.Enqueue(FTPCommand.String2Command(m)));
         if (CachedCommands.Count > 0) return CachedCommands.Dequeue();
         else return null;
     }
@@ -77,6 +74,13 @@ public struct User
 
 public struct FTPReply
 {
+    public static FTPReply CommandOkay = new FTPReply()
+    {
+        replyCode="200"
+    };
+
+
+
     public enum FirstReplyCode
     {
         PositivePreliminary=1,
@@ -85,7 +89,7 @@ public struct FTPReply
         TransientNegativeCompletion=4,
         PermanentNegativeCompletion=5
     }
-    public enum SencondReplyCode
+    public enum SecondReplyCode
     {
         Syntax=0,
         Information=1,
@@ -94,6 +98,35 @@ public struct FTPReply
         Unspecified=4,
         FileSystem=5
     }
+    FirstReplyCode firstCode
+    {
+        get { return (FirstReplyCode)(int)Char.GetNumericValue(replyCode[0]); }
+    }
+    SecondReplyCode secondCode
+    {
+        get { return (SecondReplyCode)(int)Char.GetNumericValue(replyCode[1]); }
+    }
+    int finerGradation
+    {
+        get { return (int)Char.GetNumericValue(replyCode[2]); }
+    }
+    public string replyCode;
+    public string post;
+    public static FTPReply String2Reply(string s)
+    {
+        string[] ss= s.Split(new char[] { ' ' }, 2,StringSplitOptions.RemoveEmptyEntries);
+        return ss.Length == 2 ? new FTPReply() { replyCode = ss[0], post = ss[1] } : new FTPReply() { replyCode = ss[0], post = null };
+    }
+    public static string Reply2String(FTPReply reply)
+    {
+        return ((int)reply.firstCode).ToString() + ((int)reply.secondCode).ToString() + reply.finerGradation.ToString() + " " + reply.post;
+    }
+
+    public override string ToString()
+    {
+        return FTPReply.Reply2String(this);
+    }
+
 }
 
 public struct FTPCommand
@@ -123,10 +156,7 @@ public struct FTPCommand
     public static string Command2String(FTPCommand command)
     {
         String s = command.controlCommand;
-        foreach(var p in command.parameters)
-        {
-            s += " " + p;
-        }
+        Array.ForEach(command.parameters, (p) => s += " " + p);
         return s;
     }
 

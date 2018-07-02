@@ -10,15 +10,29 @@ using System.Net;
 
 namespace FTPClient
 {
-    
-
-
-
-
     class FTPClient
     {
         TcpClient client;
         NetworkStream stream;
+
+        static Queue<FTPReply> CachedReply = new Queue<FTPReply>();
+        FTPReply? ReadNextReply()
+        {
+            if (CachedReply.Count > 0) return CachedReply.Dequeue();
+            string streamstring = null;
+            try
+            {
+                streamstring = MyFTPHelper.ReadFromNetStream(stream);
+            }
+            catch (Exception exc)
+            {
+                throw exc;
+            }
+            string[] messages = streamstring.Split(new string[] { MyFTPHelper.FTPNewLine }, StringSplitOptions.RemoveEmptyEntries);
+            Array.ForEach(messages, (m) => CachedReply.Enqueue(FTPReply.String2Reply(m)));
+            if (CachedReply.Count > 0) return CachedReply.Dequeue();
+            else return null;
+        }
         
 
         public event Action<string> ConsoleLogEvent;
@@ -57,19 +71,28 @@ namespace FTPClient
                 FTPCommand passwordCommand = new FTPCommand("PASS", new string[] { password });
                 SendMessageToServer(userCommand.ToString() + MyFTPHelper.FTPNewLine);
                 SendMessageToServer(passwordCommand.ToString() + MyFTPHelper.FTPNewLine);
+                ConsoleLogEvent += ConsoleLogDelegate;
             }
             catch(Exception exc)
             {
                 PostMessageToConsoleWithLock(exc.ToString());
             }
+            Thread t = new Thread(Start);
+            t.Start();
         }
 
-        public void StartListen()
+        public void Start()
         {
             PostMessageToConsoleWithLock("开始监听");
             while(true)
             {
-
+                FTPReply? nreply = ReadNextReply();
+                if (nreply == null) continue;
+                else
+                {
+                    FTPReply reply = nreply.Value;
+                    PostMessageToConsoleWithLock("f服务器返回值:"+reply.replyCode);
+                }
             }
         }
 

@@ -68,10 +68,7 @@ namespace FTPServer
                 throw exc;
             }
             string[] messages = streamstring.Split(new string[] { MyFTPHelper.FTPNewLine }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var message in messages)
-            {
-                CachedCommands.Enqueue(FTPCommand.String2Command(message));
-            }
+            Array.ForEach(messages, (m) => CachedCommands.Enqueue(FTPCommand.String2Command(m)));
             if (CachedCommands.Count > 0) return CachedCommands.Dequeue();
             else return null;
         }
@@ -116,14 +113,17 @@ namespace FTPServer
                                 {
                                     Logined = true;
                                     serverDispatcher.PostMessageFromClient("已成功登录",this);
+                                    MyFTPHelper.WriteToNetStream(FTPReply.CommandOkay.ToString(),stream);
                                 }
                                 else
                                 {
                                     serverDispatcher.PostMessageFromClient("密码或用户名有误",this);
+                                    MyFTPHelper.WriteToNetStream(FTPReply.CommandOkay.ToString(), stream);
                                 }
+                                
                                 break;
                             case "SIZE": //SIZE 从服务器上返回指定文件的大小
-
+                                
                                 break;
                             case "PASV": //PASV 让服务器监听特定端口
                                 break;
@@ -174,13 +174,9 @@ namespace FTPServer
         {
             IPAddress ip = ((IPEndPoint)connect.client.Client.RemoteEndPoint).Address;
             if(connect.Logined)
-            {
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() +" "+ connect.user.username+"   " + msg);
-            }
             else
-            {
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() + "   " + msg);
-            }
             
         }
 
