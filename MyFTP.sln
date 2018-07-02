@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPServer", "FTPServer\FTPServer.csproj", "{368D694A-B921-4E43-B296-CCC2C9893289}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FTP标准", "FTP标准", "{45CB6BEC-CEAC-4E38-8284-98BD7B1FBC35}"
+	ProjectSection(SolutionItems) = preProject
+		rfc959.pdf = rfc959.pdf
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPClient", "FTPClient\FTPClient.csproj", "{A8240209-95EA-4333-9BEC-4BA7A0192B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPHelper", "FTPHelper\FTPHelper.csproj", "{E628D32F-CE04-4BB3-9548-5A4EA00182B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{368D694A-B921-4E43-B296-CCC2C9893289}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{368D694A-B921-4E43-B296-CCC2C9893289}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{368D694A-B921-4E43-B296-CCC2C9893289}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{368D694A-B921-4E43-B296-CCC2C9893289}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8240209-95EA-4333-9BEC-4BA7A0192B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8240209-95EA-4333-9BEC-4BA7A0192B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8240209-95EA-4333-9BEC-4BA7A0192B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8240209-95EA-4333-9BEC-4BA7A0192B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E628D32F-CE04-4BB3-9548-5A4EA00182B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E628D32F-CE04-4BB3-9548-5A4EA00182B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E628D32F-CE04-4BB3-9548-5A4EA00182B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E628D32F-CE04-4BB3-9548-5A4EA00182B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {29D27F75-C2E7-407E-A42C-94019E9BE560}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,34 @@
+﻿<Window x:Class="FTPClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FTPClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="799">
+    <Grid>
+        <Grid HorizontalAlignment="Left" Height="169" Margin="20,10,0,0" VerticalAlignment="Top" Width="367">
+            <Label Content="上传文件" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="110"/>
+            <Label Content="上传文件路径" HorizontalAlignment="Left" Height="25" Margin="10,38,0,0" VerticalAlignment="Top" Width="304"/>
+            <Button x:Name="UploadFile" Content="上传" HorizontalAlignment="Left" Height="48" Margin="186,111,0,0" VerticalAlignment="Top" Width="171"/>
+            <Button x:Name="SelectUploadFile" Content="选择上传文件" HorizontalAlignment="Left" Height="48" Margin="0,111,0,0" VerticalAlignment="Top" Width="181"/>
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="169" Margin="392,10,0,0" VerticalAlignment="Top" Width="390">
+            <Label Content="文件下载目录" HorizontalAlignment="Left" Height="26" Margin="150,10,0,0" VerticalAlignment="Top" Width="230"/>
+            <ListBox x:Name="ServerFileList" HorizontalAlignment="Left" Height="97" Margin="10,62,0,0" VerticalAlignment="Top" Width="370"/>
+            <Button x:Name="SelectDownloadPath" Content="选择下载目录" HorizontalAlignment="Left" Height="24" Margin="10,10,0,0" VerticalAlignment="Top" Width="135"/>
+            <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="10,39,0,0" VerticalAlignment="Top" Width="355"/>
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="31" Margin="10,179,0,0" VerticalAlignment="Top" Width="771">
+            <Label Content="服务器IP地址" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="80"/>
+            <TextBox x:Name="ServerIP" HorizontalAlignment="Left" Height="30" Margin="80,2,0,-1" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="120"/>
+            <Button x:Name="ConnectServer" Content="连接" HorizontalAlignment="Left" Height="31" Margin="615,0,0,0" VerticalAlignment="Top" Width="146" Click="ConnectServer_Click"/>
+            <Label Content="用户名" HorizontalAlignment="Left" Height="31" Margin="200,1,0,-1" VerticalAlignment="Top" Width="84" RenderTransformOrigin="0.095,0"/>
+            <TextBox x:Name="Username" HorizontalAlignment="Left" Height="31" Margin="284,1,0,-1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="116"/>
+            <Label HorizontalAlignment="Left" Height="32" Margin="400,0,0,-1" VerticalAlignment="Top" Width="47" Content="密码"/>
+            <TextBox x:Name="Password" TextWrapping="Wrap" Text="TextBox" Margin="447,0,198,-1"/>
+        </Grid>
+        <Label x:Name="ClientConsole" Content="Label" HorizontalAlignment="Left" Height="199" Margin="10,210,0,0" VerticalAlignment="Top" Width="771" Background="Black" Foreground="White"/>
+
+    </Grid>
+</Window>
