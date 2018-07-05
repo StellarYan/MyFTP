@@ -35,7 +35,7 @@ namespace FTPClient
         {
             try
             {
-                client = new FTPClient(IPAddress.Parse(ServerIP.Text), Username.Text, Password.Text, (s) =>
+                client = new FTPClient(IPAddress.Parse(ServerIP.Text),int.Parse(ControlPort.Text), Username.Text, Password.Text, (s) =>
                 {
                     this.Dispatcher.Invoke(() =>
                     {
@@ -101,6 +101,23 @@ namespace FTPClient
             string filename = ss[0];
             string fileSize = ss[1];
             client.DownLoadFile(filename, int.Parse(fileSize));
+        }
+
+        private void SelectUploadFile_Click(object sender, RoutedEventArgs e)
+        {
+            CommonOpenFileDialog FilePathDialog = new CommonOpenFileDialog();
+            FilePathDialog.InitialDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            FilePathDialog.Title = "选择上传文件";
+            if (FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                UploadFilePath.Content = FilePathDialog.FileName;
+            }
+
+        }
+
+        private void UploadFile_Click(object sender, RoutedEventArgs e)
+        {
+            client.UploadFile(UploadFilePath.Content.ToString());
         }
     }
 }

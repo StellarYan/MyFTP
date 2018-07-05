@@ -12,15 +12,15 @@ namespace FTPClient
 {
     class FTPClient
     {
-        const int controlPort = 10033;
-        const int dataPort = controlPort+1;
+        int controlPort;
+        int dataPort;
 
 
 
         TcpClient controlClient;
         NetworkStream controlStream;
         TcpClient dataClient;
-        NetworkStream dataStream;
+        //NetworkStream dataStream;
         FileTransfer currenttransfer;
 
         public List<string> fileList;
@@ -75,26 +75,53 @@ namespace FTPClient
             FTPCommand downloadCommand = new FTPCommand("RETR", new string[] { filename });
             SendMessageToServer(downloadCommand.ToString() + MyFTPHelper.FTPNewLine);
             FileStream fs = File.OpenWrite(downloadDirectory + filename);
+            NetworkStream dataStream = dataClient.GetStream();
             currenttransfer = new FileTransfer()
             {
                 networkStream = dataStream,
                 filestream = fs,
-                fileByteCount = size,  
             };
-            currenttransfer.thread = new Thread(currenttransfer.Download);
-            currenttransfer.thread.Start();
+            currenttransfer.DownloadAsync(() =>
+            {
+                fs.Close();
+                dataStream.Close();
+                PostMessageToConsoleWithLock("完成下载");
+            });
+
+        }
+
+        public void UploadFile(string filepath)
+        {
+            FileStream fs = File.OpenRead(filepath);
+            NetworkStream dataStream = dataClient.GetStream();
+            PostMessageToConsoleWithLock("开始上传" + fs.Name);
+            FTPCommand uploadCommand = new FTPCommand("STOR", new string[] { Path.GetFileName(fs.Name) });
+            SendMessageToServer(uploadCommand.ToString() + MyFTPHelper.FTPNewLine);
+            currenttransfer = new FileTransfer()
+            {
+                networkStream = dataStream,
+                filestream = fs,
+            };
+            currenttransfer.UploadAsync(() =>
+            {
+                fs.Close();
+                dataStream.Close();
+                PostMessageToConsoleWithLock("完成上传");
+            });
         }
 
 
 
-        public FTPClient(IPAddress serverIP,string user,string password, Action<string> ConsoleLogDelegate)
+        public FTPClient(IPAddress serverIP,int localControlPort,string user,string password, Action<string> ConsoleLogDelegate)
         {
             controlClient = new TcpClient();
             dataClient = new TcpClient();
-            
 
             try
             {
+
+                controlPort = localControlPort;
+                dataPort = controlPort + 1;
                 controlClient.Connect(serverIP, MyFTPHelper.ftpControlPort);
                 controlStream = controlClient.GetStream();
                 FTPCommand portCommand = new FTPCommand("PORT", new string[] { controlPort.ToString() });
@@ -122,9 +149,9 @@ namespace FTPClient
         {
             var listener = TcpListener.Create(dataPort);
             listener.Start();
-            TcpClient dataClient = listener.AcceptTcpClient();
-            dataStream = dataClient.GetStream();
-            PostMessageToConsoleWithLock("已建立数据端口连接");
+            dataClient = listener.AcceptTcpClient();
+            var s = dataClient.GetStream();
+            PostMessageToConsoleWithLock("已建立数据端口连接"+s);
         }
         
 

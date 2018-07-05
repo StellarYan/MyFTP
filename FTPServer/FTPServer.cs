@@ -51,12 +51,13 @@ namespace FTPServer
         public TcpClient controlClient;
         NetworkStream controlStream;
         TcpClient dataClient;
-        NetworkStream dataStream;
+        //NetworkStream dataStream;
         FileTransfer currentTransfer;
         static Queue<FTPCommand> CachedCommands = new Queue<FTPCommand>();
         public User user = new User();
         public bool Logined=false;
 
+        
 
         public FTPCommand? ReadNextCommand()
         {
@@ -143,16 +144,15 @@ namespace FTPServer
                                 break;
 
                             case "STOR": //STOR 客户端上传文件
-
-                                break;
-                            case "RETR": //RETR 客户端下载文件
                                 if (command.parameters.Length != 1)
                                 {
                                     reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
                                     break;
                                 }
-                                FileStream fs = serverDispatcher.OpenFileStreamInfileList(command.parameters[0]);
-                                if (fs == null)
+                                string filename = command.parameters[0];
+                                FileStream downloadFileStream = File.OpenWrite(serverDispatcher.GetCurrentDirectory() + filename);
+                                NetworkStream downloadDataStream = dataClient.GetStream();
+                                if (downloadFileStream == null )
                                 {
                                     reply = new FTPReply() { replyCode = FTPReply.Code_CantOopenDataConnection };
                                     break;
@@ -164,13 +164,50 @@ namespace FTPServer
                                 }
                                 currentTransfer = new FileTransfer()
                                 {
-                                    networkStream = dataStream,
-                                    filestream = fs,
-                                    fileByteCount = (int)fs.Length,
-                                    
+                                    networkStream = downloadDataStream,
+                                    filestream = downloadFileStream,
                                 };
-                                currentTransfer.thread = new Thread(currentTransfer.Upload);
-                                currentTransfer.thread.Start();
+                                currentTransfer.DownloadAsync(() =>
+                                    {
+                                        downloadDataStream.Close();
+                                        downloadFileStream.Close();
+                                        serverDispatcher.PostMessageFromClient("文件上传完成", this);
+                                    }
+                                );
+
+                                reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
+                                break;
+                            case "RETR": //RETR 客户端下载文件
+                                if (command.parameters.Length != 1)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
+                                    break;
+                                }
+                                FileStream uploadFileStream = serverDispatcher.OpenFileStreamInfileList(command.parameters[0]);
+                                NetworkStream uploadDataStream = dataClient.GetStream();
+                                if (uploadFileStream == null)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_CantOopenDataConnection };
+                                    break;
+                                }
+                                if (dataClient == null)
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
+                                    break;
+                                }
+                                currentTransfer = new FileTransfer()
+                                {
+                                    networkStream = uploadDataStream,
+                                    filestream = uploadFileStream,
+                                };
+                                currentTransfer.UploadAsync(() =>
+                                    {
+                                        uploadDataStream.Close();
+                                        uploadFileStream.Close();
+                                        serverDispatcher.PostMessageFromClient("文件上传完成", this);
+                                    }
+                                );
+
                                 reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
                                 break;
                             case "ABOR": //QUIT 关闭与服务器的连接
@@ -185,23 +222,17 @@ namespace FTPServer
                                 };
                                 break;
                             case "PORT": //PORT 客户端的控制端口为N，数据端口为N+1，服务器的控制端口为21，数据端口为20
-                                int port;
+                                int port=0;
                                 if (command.parameters.Length != 1 ||  !int.TryParse(command.parameters[0],out port) )
                                 {
                                     reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
-                                    break;
                                 }
-                                else
-                                {
-                                    var remoteDataEnd = (IPEndPoint)controlClient.Client.RemoteEndPoint;
-                                    remoteDataEnd.Port = port+1;
-                                    dataClient = new TcpClient();
-                                    dataClient.Connect(remoteDataEnd.Address.MapToIPv4(), port + 1);
-                                    dataStream = dataClient.GetStream();
-                                    reply = new FTPReply() { replyCode = FTPReply.Code_DataConnectionOpen };
-                                    serverDispatcher.PostMessageFromClient("建立数据连接", this);
-                                    break;
-                                }
+                                var remoteDataEnd = (IPEndPoint)controlClient.Client.RemoteEndPoint;
+                                remoteDataEnd.Port = port+1;
+                                dataClient = new TcpClient();
+                                dataClient.Connect(remoteDataEnd.Address.MapToIPv4(), port + 1);
+                                reply = new FTPReply() { replyCode = FTPReply.Code_DataConnectionOpen };
+                                serverDispatcher.PostMessageFromClient("建立数据连接", this);
                                 break;
                             default:
                                 break;
@@ -226,6 +257,11 @@ namespace FTPServer
     class ServerConnectionDispatcher
     {
         readonly FTPServer server;
+
+        public DirectoryInfo GetCurrentDirectory()
+        {
+            return server.currentDirectory;
+        }
         public ServerConnectionDispatcher(FTPServer server)
         {
             this.server = server;
@@ -245,6 +281,8 @@ namespace FTPServer
             Array.ForEach(server.currentDirectory.GetFiles(), (f) => { if (f.Name == filename) fs = f.OpenRead(); });
             return fs;
         }
+
+
 
         public string GetEncodedFileList()
         {

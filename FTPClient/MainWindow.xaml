@@ -8,10 +8,9 @@
         Title="MainWindow" Height="450" Width="799">
     <Grid>
         <Grid HorizontalAlignment="Left" Height="169" Margin="20,10,0,0" VerticalAlignment="Top" Width="367">
-            <Label Content="上传文件" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="110"/>
-            <Label Content="上传文件路径" HorizontalAlignment="Left" Height="25" Margin="10,38,0,0" VerticalAlignment="Top" Width="304"/>
-            <Button x:Name="UploadFile" Content="上传" HorizontalAlignment="Left" Height="48" Margin="186,111,0,0" VerticalAlignment="Top" Width="171"/>
-            <Button x:Name="SelectUploadFile" Content="选择上传文件" HorizontalAlignment="Left" Height="48" Margin="0,111,0,0" VerticalAlignment="Top" Width="181"/>
+            <Label x:Name="UploadFilePath" Content="上传文件路径" HorizontalAlignment="Left" Height="25" Margin="0,62,0,0" VerticalAlignment="Top" Width="367"/>
+            <Button x:Name="UploadFile" Content="上传" HorizontalAlignment="Left" Height="48" Margin="186,111,0,0" VerticalAlignment="Top" Width="171" Click="UploadFile_Click"/>
+            <Button x:Name="SelectUploadFile" Content="选择上传文件" HorizontalAlignment="Left" Height="48" Margin="0,111,0,0" VerticalAlignment="Top" Width="181" Click="SelectUploadFile_Click"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="169" Margin="392,10,0,0" VerticalAlignment="Top" Width="390">
             <Label x:Name="downloadDirectoryLabel" Content="文件下载目录" HorizontalAlignment="Left" Height="26" Margin="150,10,0,0" VerticalAlignment="Top" Width="230"/>
@@ -20,13 +19,15 @@
             <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="10,39,0,0" VerticalAlignment="Top" Width="355" Click="DownloadFile_Click"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="31" Margin="10,179,0,0" VerticalAlignment="Top" Width="771">
-            <Label Content="服务器IP地址" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="80"/>
-            <TextBox x:Name="ServerIP" HorizontalAlignment="Left" Height="30" Margin="80,2,0,-1" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="120"/>
-            <Button x:Name="ConnectServer" Content="连接" HorizontalAlignment="Left" Height="31" Margin="615,0,0,0" VerticalAlignment="Top" Width="146" Click="ConnectServer_Click"/>
-            <Label Content="用户名" HorizontalAlignment="Left" Height="31" Margin="200,1,0,-1" VerticalAlignment="Top" Width="84" RenderTransformOrigin="0.095,0"/>
-            <TextBox x:Name="Username" HorizontalAlignment="Left" Height="31" Margin="284,1,0,-1" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="116"/>
-            <Label HorizontalAlignment="Left" Height="32" Margin="400,0,0,-1" VerticalAlignment="Top" Width="47" Content="密码"/>
-            <TextBox x:Name="Password" TextWrapping="Wrap" Text="TextBox" Margin="447,0,198,-1"/>
+            <Label Content="服务器IP地址" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="80" Margin="176,-2,0,0"/>
+            <TextBox x:Name="ServerIP" HorizontalAlignment="Left" Height="30" Margin="261,0,0,0" TextWrapping="Wrap" Text="127.0.0.1" VerticalAlignment="Top" Width="61"/>
+            <Button x:Name="ConnectServer" Content="连接" HorizontalAlignment="Left" Height="31" Margin="680,0,0,0" VerticalAlignment="Top" Width="81" Click="ConnectServer_Click"/>
+            <Label Content="用户名" HorizontalAlignment="Left" Height="31" Margin="322,-1,0,0" VerticalAlignment="Top" Width="49" RenderTransformOrigin="0.095,0"/>
+            <TextBox x:Name="Username" HorizontalAlignment="Left" Height="31" Margin="376,-2,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="116"/>
+            <Label HorizontalAlignment="Left" Height="32" Margin="497,-1,0,0" VerticalAlignment="Top" Width="47" Content="密码"/>
+            <TextBox x:Name="Password" TextWrapping="Wrap" Text="TextBox" Margin="549,0,96,-1"/>
+            <Label Content="FTP控制端口" HorizontalAlignment="Left" Height="29" VerticalAlignment="Top" Width="84"/>
+            <TextBox x:Name="ControlPort" HorizontalAlignment="Left" Height="32" Margin="89,0,0,-1" TextWrapping="Wrap" Text="10033" VerticalAlignment="Top" Width="87"/>
         </Grid>
         <Button x:Name="Refresh" Content="刷新" HorizontalAlignment="Left" Height="30" Margin="304,0,0,0" VerticalAlignment="Top" Width="83" Click="Refresh_Click"/>
         <TextBox x:Name="ClientConsole" HorizontalAlignment="Left" Height="204" Margin="0,215,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="791" Background="Black" Foreground="White" IsReadOnly="True" TextChanged="ClientConsole_TextChanged"/>

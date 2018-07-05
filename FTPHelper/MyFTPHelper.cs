@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 public static class MyFTPHelper
 {
@@ -13,6 +14,8 @@ public static class MyFTPHelper
     const int commandBufferSize = 1024;
     public static string FTPNewLine = Environment.NewLine;
     public static string FileListNewLine = "\n";
+    
+
     public static void WriteToNetStream(string s,NetworkStream stream)
     {
         try
@@ -31,7 +34,6 @@ public static class MyFTPHelper
         try
         {
             byte[] commandBuffer = new byte[commandBufferSize];
-            
             int bytesCount = stream.Read(commandBuffer, 0, commandBufferSize);
             return Encoding.Unicode.GetString(commandBuffer, 0, bytesCount);
         }
@@ -205,52 +207,86 @@ public enum TransferState
     Ready,Running,Finished,Error
 }
 
+/// <summary>
+/// FTP标准中进行文件传输时，不需要在传输前指定文件大小。
+/// 所以单纯的FTP中，服务器和客户端实际上到不知道文件是否传完了，只是随着流结束传输就结束了
+/// </summary>
 public class FileTransfer
 {
     public TransferState State { get; private set; }
     public NetworkStream networkStream;
     public FileStream filestream;
-    public int fileByteCount;
-    public Thread thread;
+    private int BytesTransfer;
 
-    public void Download()
+    public const int BytebufferInitSize = 1024 * 1024;
+
+    public void DownloadAsync(Action DownloadedCallback)
     {
-        
-        State = TransferState.Ready;
-        Byte[] buffer = new byte[fileByteCount];
         State = TransferState.Running;
-        int res= networkStream.Read(buffer, 0, fileByteCount);
-        if(res== fileByteCount)
+        BytesTransfer = 0;
+        Task.Run(() =>
         {
-            filestream.Write(buffer, 0, fileByteCount);
-            State = TransferState.Finished;
-        }
-        else
-        {
-            State = TransferState.Error;
-        }
-        filestream.Close();
+            List<byte> mbuffer = new List<byte>(BytebufferInitSize);
+            try
+            {
+                while (true)
+                {
+                    int r = networkStream.ReadByte();
+                    if (r < byte.MinValue || r > byte.MaxValue) break;
+                    mbuffer.Add(Convert.ToByte(r));
+                    BytesTransfer++;
+                }
+                filestream.Write(mbuffer.ToArray(), 0, BytesTransfer);
+                State = TransferState.Finished;
+                DownloadedCallback();
+
+            }
+            catch(Exception exc)
+            {
+                if(exc.GetType() == typeof(ObjectDisposedException))
+                {
+                    filestream.Write(mbuffer.ToArray(), 0, BytesTransfer);
+                    State = TransferState.Finished;
+                    DownloadedCallback();
+                }
+                else
+                {
+                    State = TransferState.Error;
+                    throw exc;
+                }
+            }
+            
+        });
         return;
-
-
     }
 
-    public void Upload()
+    public void UploadAsync(Action UploadedCallback)
     {
-        State = TransferState.Ready;
-        Byte[] buffer = new byte[fileByteCount];
         State = TransferState.Running;
-        int res = filestream.Read(buffer, 0, fileByteCount);
-        if (res == fileByteCount)
+        BytesTransfer = 0;
+        Task.Run(() =>
         {
-            networkStream.Write(buffer, 0, fileByteCount);
-            State = TransferState.Finished;
-        }
-        else
-        {
-            State = TransferState.Error;
-        }
-        filestream.Close();
+            try
+            {
+                List<byte> mbuffer = new List<byte>(BytebufferInitSize);
+                while (true)
+                {
+                    int r = filestream.ReadByte();
+                    if (r == -1) break;
+                    mbuffer.Add(Convert.ToByte(r));
+                    BytesTransfer++;
+                }
+                networkStream.Write(mbuffer.ToArray(), 0, BytesTransfer);
+                State = TransferState.Finished;
+                UploadedCallback();
+            }
+            catch (Exception exc)
+            {
+                State = TransferState.Error;
+                throw exc;
+            }
+
+        });
         return;
 
     }
