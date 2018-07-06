@@ -8,11 +8,11 @@
         Title="MainWindow" Height="440.15" Width="800">
     <Grid>
         <Grid HorizontalAlignment="Left" Height="181" Margin="10,10,0,0" VerticalAlignment="Top" Width="362">
-            <Label x:Name="SelectFilePathLabel" Content="服务器文件目录：" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="334" Margin="0,49,0,0"/>
-            <ListBox x:Name="FileListBox" HorizontalAlignment="Left" Height="104" Margin="0,77,0,0" VerticalAlignment="Top" Width="334"/>
+            <ListBox x:Name="FileListBox" HorizontalAlignment="Left" Height="78" Margin="0,103,0,0" VerticalAlignment="Top" Width="334"/>
             <Button x:Name="SelectFilePath" Content="选择服务器文件目录" HorizontalAlignment="Left" Height="44" VerticalAlignment="Top" Width="334" Click="SelectFilePath_Click"/>
             <Button x:Name="InitServer" Content="创建服务器" HorizontalAlignment="Left" Height="26" Margin="0,181,-411,-26" VerticalAlignment="Top" Width="773" Click="InitServer_Click" IsEnabled="False"/>
             <Label HorizontalAlignment="Left" Height="25" Margin="362,0,-56,0" VerticalAlignment="Top" Width="56" Content="用户名"/>
+            <TextBlock x:Name="SelectFilePathText" HorizontalAlignment="Left" Height="47" Margin="0,56,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="334"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="181" Margin="372,10,0,0" VerticalAlignment="Top" Width="410">
             <Label Content="密码" HorizontalAlignment="Left" Height="25" Margin="163,0,0,0" VerticalAlignment="Top" Width="46"/>

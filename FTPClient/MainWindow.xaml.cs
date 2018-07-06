@@ -43,7 +43,9 @@ namespace FTPClient
                     }
                     );
                 });
-                client.downloadDirectory = new DirectoryInfo(downloadDirectoryLabel.Content.ToString());
+                client.downloadDirectory = new DirectoryInfo(
+                    System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                    );
                 ConnectGrid.IsEnabled = false;
                 UploadGrid.IsEnabled = true;
                 downloadGrid.IsEnabled = true;
@@ -55,6 +57,7 @@ namespace FTPClient
                       UploadGrid.IsEnabled = false;
                       downloadGrid.IsEnabled = false;
                   };
+                UpdateView();
             }
             catch (Exception exc)
             {
@@ -73,10 +76,10 @@ namespace FTPClient
                 }
                 if (client.downloadDirectory != null)
                 {
-                    downloadDirectoryLabel.Content = client.downloadDirectory.ToString();
+                    downloadDirectory.Text = client.downloadDirectory.ToString();
                     DownloadFile.IsEnabled = true;
                 }
-                if(UploadFilePath.Content.ToString()!=String.Empty)
+                if(UploadFilePath.Text!=String.Empty)
                 {
                     UploadFile.IsEnabled = true;
                 }
@@ -98,11 +101,11 @@ namespace FTPClient
             FilePathDialog.Title = "选择下载目录";
             if (FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                downloadDirectoryLabel.Content = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
+                downloadDirectory.Text = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
             }
             if(client!=null)
             {
-                client.downloadDirectory = new DirectoryInfo(downloadDirectoryLabel.Content.ToString());
+                client.downloadDirectory = new DirectoryInfo(downloadDirectory.Text);
             }
             UpdateView();
         }
@@ -127,7 +130,7 @@ namespace FTPClient
             FilePathDialog.Title = "选择上传文件";
             if (FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                UploadFilePath.Content = FilePathDialog.FileName;
+                UploadFilePath.Text = FilePathDialog.FileName;
             }
             UpdateView();
 
@@ -136,9 +139,9 @@ namespace FTPClient
         private void UploadFile_Click(object sender, RoutedEventArgs e)
         {
             
-            if (System.IO.File.Exists(UploadFilePath.Content.ToString()))
+            if (System.IO.File.Exists(UploadFilePath.Text.ToString()))
             {
-                client.UploadFile(UploadFilePath.Content.ToString());
+                client.UploadFile(UploadFilePath.Text.ToString());
             }
             else
             {

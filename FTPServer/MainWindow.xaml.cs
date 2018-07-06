@@ -81,9 +81,9 @@ namespace FTPServer
             if(FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 if(Server==null) InitServer.IsEnabled = true;
-                SelectFilePathLabel.Content = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
+                SelectFilePathText.Text = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
             }
-            serverDirectory = new DirectoryInfo(SelectFilePathLabel.Content.ToString());
+            serverDirectory = new DirectoryInfo(SelectFilePathText.Text);
             UpdateView();
             UpdateServer();
         }

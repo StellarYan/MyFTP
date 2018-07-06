@@ -55,6 +55,7 @@ namespace FTPServer
         static Queue<FTPCommand> CachedCommands = new Queue<FTPCommand>();
         public User user = new User();
         public bool Logined=false;
+        public int controlPort = 0;
 
         
 
@@ -214,16 +215,21 @@ namespace FTPServer
                             case "PASV": //PASV 数据线程让服务器监听特定端口
                                 throw new NotImplementedException();
                             case "PORT": //PORT 客户端的控制端口为N，数据端口为N+1，服务器的控制端口为21，数据端口为20
-                                int port=0;
-                                if (command.parameters.Length != 1 ||  !int.TryParse(command.parameters[0],out port) )
+                                if (command.parameters.Length != 1 ||  !int.TryParse(command.parameters[0],out controlPort) )
                                 {
                                     reply = new FTPReply() { replyCode = FTPReply.Code_SyntaxErrorPara };
+                                    break;
+                                }
+                                if(!serverDispatcher.CheckDataPortLegal(controlPort,this))
+                                {
+                                    reply = new FTPReply() { replyCode = FTPReply.Code_CantOopenDataConnection };
+                                    break;
                                 }
                                 var remoteDataEnd = (IPEndPoint)controlClient.Client.RemoteEndPoint;
-                                remoteDataEnd.Port = port+1;
+                                remoteDataEnd.Port = controlPort + 1;
                                 dataClient = new TcpClient();
-                                dataClient.ConnectAsync(remoteDataEnd.Address.MapToIPv4(), port + 1);
                                 reply = new FTPReply() { replyCode = FTPReply.Code_DataConnectionOpen };
+                                dataClient.ConnectAsync(remoteDataEnd.Address.MapToIPv4(), remoteDataEnd.Port);
                                 serverDispatcher.PostMessageFromClient("与"+user.username+"建立数据连接", this);
                                 break;
                             default:
@@ -249,6 +255,19 @@ namespace FTPServer
     class ServerConnectionDispatcher
     {
         readonly FTPServer server;
+
+        public bool CheckDataPortLegal(int port,FTPConnect connect)
+        {
+            bool res = true;
+            server.FTPConnects.ForEach((c) =>
+            {
+                if (c!= connect && ( port == c.controlPort || port == c.controlPort + 1 || port == c.controlPort - 1))
+                    res = false;
+            });
+            return res;
+            
+        }
+        
 
         public DirectoryInfo GetCurrentDirectory()
         {
@@ -302,7 +321,7 @@ namespace FTPServer
     class FTPServer
     {
         TcpListener listener;
-        List<FTPConnect> FTPConnects = new List<FTPConnect>();
+        public List<FTPConnect> FTPConnects = new List<FTPConnect>();
         Thread listenThread;
 
         public DirectoryInfo currentDirectory;

@@ -8,17 +8,17 @@
         Title="MainWindow" Height="450" Width="799">
     <Grid>
         <Grid x:Name="UploadGrid" HorizontalAlignment="Left" Height="169" Margin="20,10,0,0" VerticalAlignment="Top" Width="367" IsEnabled="False">
-            <Label x:Name="UploadFilePath" Content="" HorizontalAlignment="Left" Height="25" Margin="0,62,0,0" VerticalAlignment="Top" Width="367"/>
             <Button x:Name="UploadFile" Content="上传" HorizontalAlignment="Left" Height="48" Margin="186,111,0,0" VerticalAlignment="Top" Width="171" Click="UploadFile_Click"/>
             <Button x:Name="SelectUploadFile" Content="选择上传文件" HorizontalAlignment="Left" Height="48" Margin="0,111,0,0" VerticalAlignment="Top" Width="181" Click="SelectUploadFile_Click"/>
-            <Label Content="文件上传路径" HorizontalAlignment="Left" Height="23" Margin="46,39,0,0" VerticalAlignment="Top" Width="266"/>
+            <Label Content="文件上传路径" HorizontalAlignment="Left" Height="23" Margin="10,0,0,0" VerticalAlignment="Top" Width="266"/>
+            <TextBlock x:Name="UploadFilePath" HorizontalAlignment="Left" Height="69" Margin="0,23,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="367"/>
         </Grid>
         <Grid x:Name="downloadGrid" HorizontalAlignment="Left" Height="179" Margin="392,0,0,0" VerticalAlignment="Top" Width="390" IsEnabled="False">
-            <Label x:Name="downloadDirectoryLabel" Content="文件下载目录" HorizontalAlignment="Left" Height="26" Margin="10,24,0,0" VerticalAlignment="Top" Width="370"/>
-            <ListBox x:Name="ServerFileList" HorizontalAlignment="Left" Height="97" Margin="10,72,0,0" VerticalAlignment="Top" Width="370"/>
-            <Button x:Name="SelectDownloadPath" Content="选择下载目录" HorizontalAlignment="Left" Height="24" Margin="119,0,0,0" VerticalAlignment="Top" Width="135" Click="SelectDownloadPath_Click"/>
-            <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="10,50,0,0" VerticalAlignment="Top" Width="135" Click="DownloadFile_Click" IsEnabled="False"/>
-            <Button x:Name="Refresh" Content="刷新服务器文件目录" HorizontalAlignment="Left" Height="24" Margin="186,50,0,0" VerticalAlignment="Top" Width="135" Click="Refresh_Click"/>
+            <ListBox x:Name="ServerFileList" HorizontalAlignment="Left" Height="92" Margin="10,77,0,0" VerticalAlignment="Top" Width="370"/>
+            <Button x:Name="SelectDownloadPath" Content="选择下载目录" HorizontalAlignment="Left" Height="22" Margin="10,50,0,0" VerticalAlignment="Top" Width="135" Click="SelectDownloadPath_Click"/>
+            <Button x:Name="DownloadFile" Content="下载文件" HorizontalAlignment="Left" Height="22" Margin="302,50,0,0" VerticalAlignment="Top" Width="78" Click="DownloadFile_Click" IsEnabled="False"/>
+            <Button x:Name="Refresh" Content="刷新服务器文件目录" HorizontalAlignment="Left" Height="22" Margin="145,50,0,0" VerticalAlignment="Top" Width="135" Click="Refresh_Click"/>
+            <TextBlock x:Name="downloadDirectory" HorizontalAlignment="Left" Height="38" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="375"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="31" Margin="10,179,0,0" VerticalAlignment="Top" Width="771"/>
         <TextBox x:Name="ClientConsole" HorizontalAlignment="Left" Height="204" Margin="0,215,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="791" Background="Black" Foreground="White" IsReadOnly="True" TextChanged="ClientConsole_TextChanged"/>
