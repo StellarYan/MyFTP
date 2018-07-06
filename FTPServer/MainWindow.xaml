@@ -11,7 +11,7 @@
             <Label x:Name="SelectFilePathLabel" Content="服务器文件目录：" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="334" Margin="0,49,0,0"/>
             <ListBox x:Name="FileListBox" HorizontalAlignment="Left" Height="104" Margin="0,77,0,0" VerticalAlignment="Top" Width="334"/>
             <Button x:Name="SelectFilePath" Content="选择服务器文件目录" HorizontalAlignment="Left" Height="44" VerticalAlignment="Top" Width="334" Click="SelectFilePath_Click"/>
-            <Button x:Name="InitServer" Content="创建服务器" HorizontalAlignment="Left" Height="26" Margin="0,181,-411,-26" VerticalAlignment="Top" Width="773" Click="InitServer_Click"/>
+            <Button x:Name="InitServer" Content="创建服务器" HorizontalAlignment="Left" Height="26" Margin="0,181,-411,-26" VerticalAlignment="Top" Width="773" Click="InitServer_Click" IsEnabled="False"/>
             <Label HorizontalAlignment="Left" Height="25" Margin="362,0,-56,0" VerticalAlignment="Top" Width="56" Content="用户名"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="181" Margin="372,10,0,0" VerticalAlignment="Top" Width="410">
@@ -19,9 +19,8 @@
             <TextBox x:Name="Username" TextWrapping="Wrap" Text="TextBox" Margin="59,0,247,156"/>
             <TextBox x:Name="Password" HorizontalAlignment="Left" Height="25" Margin="196,0,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="130"/>
             <ListBox x:Name="UserList" HorizontalAlignment="Left" Height="122" Margin="0,59,0,0" VerticalAlignment="Top" Width="410"/>
-            <CheckBox x:Name="LoginBeforeFTP" Content="下载是否要求提前登录" HorizontalAlignment="Left" Height="25" Margin="10,30,0,0" VerticalAlignment="Top" Width="153"/>
         </Grid>
         <Button x:Name="CreateUser" Content="创建用户" HorizontalAlignment="Left" Height="29" Margin="698,10,0,0" VerticalAlignment="Top" Width="84" Click="CreateUser_Click"/>
-        <TextBox x:Name="ServerConsole" HorizontalAlignment="Left" Height="192" Margin="0,217,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="792" Background="Black" Foreground="White" IsReadOnly="True" TextChanged="ServerConsole_TextChanged"/>
+        <TextBox x:Name="ServerConsole" HorizontalAlignment="Left" Height="192" Margin="0,217,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="792" Background="Black" Foreground="White" IsReadOnly="True" TextChanged="ServerConsole_TextChanged"/>
     </Grid>
 </Window>

@@ -34,6 +34,7 @@ namespace FTPServer
             this.Closed += (object sender, EventArgs e) => { Process.GetCurrentProcess().Kill(); };
             registeredUsers = new List<User>();
             registeredUsers.Add(new User() { username = "TextBox", password = "TextBox" });
+            UpdateView();
         }
         
 
@@ -79,6 +80,7 @@ namespace FTPServer
             FilePathDialog.Title = "选择FTP服务器文件夹";
             if(FilePathDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
+                if(Server==null) InitServer.IsEnabled = true;
                 SelectFilePathLabel.Content = FilePathDialog.FileName + System.IO.Path.DirectorySeparatorChar;
             }
             serverDirectory = new DirectoryInfo(SelectFilePathLabel.Content.ToString());

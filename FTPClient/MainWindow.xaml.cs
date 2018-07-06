@@ -44,11 +44,21 @@ namespace FTPClient
                     );
                 });
                 client.downloadDirectory = new DirectoryInfo(downloadDirectoryLabel.Content.ToString());
-
+                ConnectGrid.IsEnabled = false;
+                UploadGrid.IsEnabled = true;
+                downloadGrid.IsEnabled = true;
+                DownloadFile.IsEnabled = false;
+                UploadFile.IsEnabled = false;
+                client.serverDisconnectEvent += (s, a) =>
+                  {
+                      ConnectGrid.IsEnabled = true;
+                      UploadGrid.IsEnabled = false;
+                      downloadGrid.IsEnabled = false;
+                  };
             }
             catch (Exception exc)
             {
-                ClientConsole.Text += "连接失败" + exc.Message;
+                ClientConsole.Text += "连接失败" + exc.Message + Environment.NewLine;
             }
         }
 
@@ -64,12 +74,19 @@ namespace FTPClient
                 if (client.downloadDirectory != null)
                 {
                     downloadDirectoryLabel.Content = client.downloadDirectory.ToString();
+                    DownloadFile.IsEnabled = true;
                 }
+                if(UploadFilePath.Content.ToString()!=String.Empty)
+                {
+                    UploadFile.IsEnabled = true;
+                }
+                
             }
         }
 
         private void Refresh_Click(object sender, RoutedEventArgs e)
         {
+            client.UpdateList();
             UpdateView();
         }
 
@@ -112,12 +129,22 @@ namespace FTPClient
             {
                 UploadFilePath.Content = FilePathDialog.FileName;
             }
+            UpdateView();
 
         }
 
         private void UploadFile_Click(object sender, RoutedEventArgs e)
         {
-            client.UploadFile(UploadFilePath.Content.ToString());
+            
+            if (System.IO.File.Exists(UploadFilePath.Content.ToString()))
+            {
+                client.UploadFile(UploadFilePath.Content.ToString());
+            }
+            else
+            {
+                client.PostMessageToConsoleWithLock("不是合法的上传文件，请检查上传文件路径是否正确");
+            }
+            
         }
     }
 }

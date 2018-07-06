@@ -171,6 +171,8 @@ public struct FTPCommand
         this.parameters = parameters;
     }
 
+    
+
     public static FTPCommand String2Command(string s)
     {
         string[] tokens = s.Split(' ');

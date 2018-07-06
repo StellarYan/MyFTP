@@ -51,7 +51,6 @@ namespace FTPServer
         public TcpClient controlClient;
         NetworkStream controlStream;
         TcpClient dataClient;
-        //NetworkStream dataStream;
         FileTransfer currentTransfer;
         static Queue<FTPCommand> CachedCommands = new Queue<FTPCommand>();
         public User user = new User();
@@ -96,7 +95,6 @@ namespace FTPServer
                     else
                     {
                         FTPCommand command = ncommand.Value;
-                        serverDispatcher.PostMessageFromClient(command.controlCommand + "  " + string.Join(" ", command.parameters), this);
                         FTPReply reply = new FTPReply() { replyCode=FTPReply.Code_SyntaxError };
                         switch (command.controlCommand)
                         {
@@ -142,7 +140,6 @@ namespace FTPServer
                                     post = serverDispatcher.GetEncodedFileList()
                                 };
                                 break;
-
                             case "STOR": //STOR 客户端上传文件
                                 if (command.parameters.Length != 1)
                                 {
@@ -211,16 +208,11 @@ namespace FTPServer
                                 reply = new FTPReply() { replyCode = FTPReply.Code_ConnectionClosed };
                                 break;
                             case "ABOR": //QUIT 关闭与服务器的连接
-                                break;
+                                throw new NotImplementedException();
                             case "QUIT": //ABOR 放弃之前的文件传输
-                                break;
-                            case "PASV": //PASV 数据线程让服务器监听特定端口\
-                                reply = new FTPReply()
-                                {
-                                    replyCode = FTPReply.Code_CommandNotImplemented,
-                                    post = null
-                                };
-                                break;
+                                throw new NotImplementedException();
+                            case "PASV": //PASV 数据线程让服务器监听特定端口
+                                throw new NotImplementedException();
                             case "PORT": //PORT 客户端的控制端口为N，数据端口为N+1，服务器的控制端口为21，数据端口为20
                                 int port=0;
                                 if (command.parameters.Length != 1 ||  !int.TryParse(command.parameters[0],out port) )
@@ -230,9 +222,9 @@ namespace FTPServer
                                 var remoteDataEnd = (IPEndPoint)controlClient.Client.RemoteEndPoint;
                                 remoteDataEnd.Port = port+1;
                                 dataClient = new TcpClient();
-                                dataClient.Connect(remoteDataEnd.Address.MapToIPv4(), port + 1);
+                                dataClient.ConnectAsync(remoteDataEnd.Address.MapToIPv4(), port + 1);
                                 reply = new FTPReply() { replyCode = FTPReply.Code_DataConnectionOpen };
-                                serverDispatcher.PostMessageFromClient("建立数据连接", this);
+                                serverDispatcher.PostMessageFromClient("与"+user.username+"建立数据连接", this);
                                 break;
                             default:
                                 break;
@@ -298,8 +290,9 @@ namespace FTPServer
         public void PostMessageFromClient(string msg, FTPConnect connect)
         {
             IPAddress ip = ((IPEndPoint)connect.controlClient.Client.RemoteEndPoint).Address;
+            
             if(connect.Logined)
-                server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() +" "+ connect.user.username+"   " + msg);
+                server.PostMessageToConsoleWithLock(DateTime.Now + " " + connect.user.username+"@"+ ip.MapToIPv4().ToString() +" " + msg);
             else
                 server.PostMessageToConsoleWithLock(DateTime.Now + " " + ip.ToString() + "   " + msg);
         }
